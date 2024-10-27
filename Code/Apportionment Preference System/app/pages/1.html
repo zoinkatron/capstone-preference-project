@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Information Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #333;
+            justify-content: center;
+        }
+
+        p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        p1 {
+            display: flex;
+            color: #666;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Admin button */
+        .admin-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Modal  */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0, 0, 0, 0.5); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #444;
+            font-size: 24px;
+        }
+
+        .modal-content p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .close-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Custom alert modal */
+        .alert-modal {
+            display: none;
+            position: fixed;
+            z-index: 2;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alert-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin button -->
+    <!-- <button class="admin-btn" id="adminButton">Admin</button> -->
+
+    <!-- pop-up window -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <h2>Read Introductions</h2>
+            <p>Please read the following instructions carefully and click on the “Continue” button to start the task.</p>
+            <p1>Tip: Ensure that you fill in the relevant information carefully as you proceed through each step to ensure that the final submission is accurate.</p1>
+            <button id="closeModal" class="close-btn">Continue</button>
+        </div>
+    </div>
+
+    <!-- Submit Personal Information -->
+    <div class="container" id="step-1">
+        <h1>Submit information</h1>
+        <h2>Please submit your personal information</h2>
+        <p>Please fill in the following information to continue</p>
+        <form id="form-step-1">
+            <div class="form-group">
+                <label for="email">e-mail address:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="studentId">My QUT Student ID:</label>
+                <input type="text" id="studentId" name="studentId" required>
+            </div>
+            <div class="form-group">
+                <label for="groupId">Our Team ID:</label>
+                <input type="text" id="groupId" name="groupId" required>
+            </div>
+            <div class="form-group">
+                <label for="groupDescription">Group Description:</label>
+                <textarea id="groupDescription" name="groupDescription" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('myModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const step1Form = document.getElementById('form-step-1');
+            const adminButton = document.getElementById('adminButton');
+            const closeAlertBtn = document.getElementById('closeAlert');
+
+            // Show popups
+            modal.style.display = "flex";
+
+            // Close the pop-up window and display the form after the user clicks the Continue button.
+            closeModalBtn.addEventListener('click', function() {
+                modal.style.display = "none";
+                document.getElementById('step-1').style.display = 'block'; 
+            });
+
+            // Handle form submissions
+            step1Form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Verify that all form fields are filled in
+                const email = document.getElementById('email').value;
+                const studentId = document.getElementById('studentId').value;
+                const groupId = document.getElementById('groupId').value;
+                const groupDescription = document.getElementById('groupDescription').value;
+
+                if (email && studentId && groupId && groupDescription) {
+                    // Store the data in local storage
+                    const formData = {
+                        email,
+                        studentId,
+                        groupId,
+                        groupDescription
+                    };
+                    localStorage.setItem('formData', JSON.stringify(formData));
+
+                    // Redirect to 2.html
+                    window.location.href = '2.html';
+                } else {
+                    // Show custom alert modal if fields are incomplete
+         
+                }
+            });
+
+            // Admin button click event
+            adminButton.addEventListener('click', function() {
+                window.location.href = 'admin.html'; // Redirect to admin page
+            });
+
+            // Close custom alert modal
+            closeAlertBtn.addEventListener('click', function() {
+      
+            });
+        });
+    </script>
+</body>
+</html>

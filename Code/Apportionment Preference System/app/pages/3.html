@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .table-wrapper {
+        max-height: 500px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      table {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        border-collapse: collapse;
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 40px;
+      }
+
+      td {
+        padding: 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #eeeeee;
+      }
+
+      td:last-child {
+        text-align: center;
+      }
+
+      .slider-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .slider {
+        -webkit-appearance: none;
+        width: 200px;
+        height: 8px;
+        background: #ddd;
+        outline: none;
+        border-radius: 5px;
+        margin: 0 10px;
+        transition: background-color 0.3s ease;
+      }
+
+      .slider:hover {
+        background-color: #cce1ff;
+      }
+
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background: #007BFF;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+      }
+
+      .slider::-webkit-slider-thumb:hover {
+        background-color: #006666;
+      }
+
+      .slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        background: #007BFF;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+      }
+
+      .slider::-moz-range-thumb:hover {
+        background-color: #006666;
+      }
+
+      .value-display {
+        width: 50px;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+      }
+
+      button {
+        padding: 8px 12px;
+        margin: 0 5px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007BFF;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .submit-btn {
+        padding: 12px 20px;
+        background-color: #28a745;
+        border-radius: 5px;
+        font-size: 16px;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        display: block;
+        margin: 0 auto;
+        margin-top: 20px;
+      }
+
+      .submit-btn:hover {
+        background-color: #218838;
+      }
+
+      .submit-btn:disabled {
+        background-color: #ccc;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        animation: fadeIn 0.3s;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover {
+        color: black;
+      }
+
+      .total-display {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <span class="total-display" style="color: black;">0.0</span>
+      <div class="table-wrapper">
+        <table>
+          <tbody id="projectTable"></tbody>
+        </table>
+      </div>
+      <button class="submit-btn" onclick="handleSubmit()">Submit</button>
+
+      <!-- Custom Modal for validation -->
+      <div id="validationModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeValidationModal()">&times;</span>
+          <p>The sum of all values must not exceed the limit! Please adjust before submitting.</p>
+        </div>
+      </div>
+
+      <!-- Custom Modal for submission success -->
+      <div id="successModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeSuccessModal()">&times;</span>
+          <p>Submitted successfully!</p>
+        </div>
+      </div>
+
+      <!-- Custom Modal for submission failure -->
+      <div id="errorModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeErrorModal()">&times;</span>
+          <p>Submission failed, please try again.</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const chooseItem = JSON.parse(localStorage.getItem('chooseItemId')) || [];
+      const projectTable = document.getElementById('projectTable');
+      const score = JSON.parse(localStorage.getItem('quantityAndscore')).score;
+      
+      chooseItem.forEach((item, index) => {
+        const projectName = item.split(',');
+        const row = document.createElement('tr');
+        row.innerHTML = `\
+          <td>${projectName}</td>\
+          <td>\
+            <div class="slider-container">\
+              <button onclick="adjustValue(this, -0.1)">-</button>\
+              <input type="range" min="0" max="${score}" value="0" step="0.1" class="slider" oninput="updateValue(this)">\
+              <button onclick="adjustValue(this, 0.1)">+</button>\
+              <span class="value-display">0.0</span>\
+            </div>\
+          </td>\
+        `;
+        projectTable.appendChild(row);
+      });
+
+      function adjustValue(button, increment) {
+        var slider = button.parentElement.querySelector('.slider');
+        var valueDisplay = button.parentElement.querySelector('.value-display');
+        var newValue = parseFloat(slider.value) + increment;
+        newValue = Math.max(0, Math.min(score, newValue));
+        slider.value = newValue;
+        valueDisplay.innerText = Math.min(score, newValue).toFixed(1);
+        displayTotalElement();
+      }
+
+      function updateValue(slider) {
+        var valueDisplay = slider.parentElement.querySelector('.value-display');
+        var newValue = parseFloat(slider.value);
+        valueDisplay.innerText = Math.min(score, newValue).toFixed(1);
+        displayTotalElement();
+      }
+
+      function displayTotalElement() {
+        var total = 0;
+        var totalDisplay = document.querySelector('.total-display');
+        var sliders = document.querySelectorAll('.slider');
+        sliders.forEach(function(slider) {
+          total += parseFloat(slider.value);
+        });
+        totalDisplay.innerText = total.toFixed(1);
+        totalDisplay.style.color = total > score ? 'red' : 'black';
+      }
+
+      function validateTotal() {
+        var total = 0;
+        var sliders = document.querySelectorAll('.slider');
+        sliders.forEach(function(slider) {
+          total += parseFloat(slider.value);
+        });
+        return total <= score;
+      }
+
+      function closeValidationModal() {
+        var modal = document.getElementById("validationModal");
+        modal.style.display = "none";
+      }
+
+      function closeSuccessModal() {
+        var modal = document.getElementById("successModal");
+        modal.style.display = "none";
+      }
+
+      function closeErrorModal() {
+        var modal = document.getElementById("errorModal");
+        modal.style.display = "none";
+      }
+
+      function handleSubmit() {
+        if (!validateTotal()) {
+          var modal = document.getElementById("validationModal");
+          modal.style.display = "flex";
+        } else {
+          var resultArray = [];
+          var sliders = document.querySelectorAll('.slider');
+          
+          sliders.forEach(function(slider, index) {
+            var projectName = projectTable.rows[index].cells[0].innerText;
+            var score = (slider.value / 10).toFixed(1);
+            resultArray.push({
+              project: projectName,
+              score: score
+            });
+          });
+          const formData = JSON.parse(localStorage.getItem('formData')) || {};
+          const dataToSubmit = {
+            projectScores: resultArray,
+            ...formData
+          };
+          fetch('http://localhost:3001/api/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dataToSubmit)
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network error, submission failed!');
+            }
+           
+            return response.json();
+          })
+          .then(data => {
+            console.log('Submission successful:', data);
+            localStorage.removeItem('chooseItem')
+            localStorage.removeItem('chooseItemId')
+            localStorage.removeItem('formData')
+
+            var modal = document.getElementById("successModal");
+            modal.style.display = "flex";
+          })
+          .catch(error => {
+            console.error('Submission failed:', error);
+            var modal = document.getElementById("errorModal");
+            modal.style.display = "flex";
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

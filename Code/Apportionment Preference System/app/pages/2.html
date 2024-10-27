@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            display: flex;
+            height: 500px;
+        }
+        .left-container {
+            flex: 1;
+            margin-right: 20px;
+            max-height: 100%;
+            overflow-y: auto;
+        }
+        .right-container {
+            flex: 2;
+            max-height: 100%;
+            overflow-y: auto;
+        }
+        .short-title-item {
+            cursor: pointer;
+            padding: 8px;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .short-title-item:hover {
+            background-color: #eee;
+        }
+        .title-list-item {
+            cursor: pointer;
+            padding: 5px;
+            margin: 5px 0;
+            background-color: #e6e6e6;
+            border-radius: 3px;
+        }
+        .title-list-item:hover {
+            background-color: #ddd;
+        }
+        .section {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .search-bar {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .search-bar button {
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .search-bar button:hover {
+            background-color: #45a049;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        .progress-container {
+            margin: 0 auto;
+            margin-top: 20px;
+            max-width: 1000px;
+            background-color: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            bottom: 0;
+        }
+        .progress-bar {
+            height: 20px;
+            width: 0;
+            background-color: #007BFF; /* Default progress bar color */
+            transition: width 0.3s, background-color 0.3s; /* Add background color transition effect */
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .button-container {
+            margin-top: 10px;
+            text-align: center; /* Center the buttons */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #submit-button {
+            background-color: green;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; /* Default hidden */
+     
+        }
+        #submit-button:hover {
+            background-color: darkgreen;
+        }
+        /* Table styles */
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f9f9f9;
+        }
+        .remove-button {
+            background-color: red;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .remove-button:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search projects by keyword...">
+        <button onclick="searchProjects()">Search</button>
+    </div>
+    <div id="error-message" class="error-message"></div>
+
+    <div class="container">
+        <div class="left-container">
+            <h3>Projects</h3>
+            <div id="short-title-list"></div>
+        </div>
+        <div class="right-container">
+            <h3>Details</h3>
+            <div id="project-details-container"></div> <!-- Container for project details -->
+        </div>
+    </div>
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div>
+    <div class="progress-text">Selected 0 projects out of  <span id="total-projects"></span> total projects</div>
+    <div class="button-container">
+        <button id="submit-button" >Submit</button>
+    </div>
+
+    <!-- Chosen projects table -->
+    <div id="chosen-projects-container">
+        <h3>Chosen Projects</h3>
+        <table id="chosen-projects-table">
+            <thead>
+                <tr>
+                    <th>Project Title</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="chosen-projects-body">
+                <!-- Dynamically filled with chosen projects -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let allProjectsData = []; // Variable to store all projects data
+        const chosenItems = new Set();
+        const chosenItemsId = new Set();
+        let chooseCount = 0;
+
+        async function fetchData() {
+    try {
+        const response = await fetch('http://localhost:3001/api/projects');
+
+        if (!response.ok) {
+            throw new Error('Network response error');
+        }
+
+        const jsonData = await response.json();
+        
+        allProjectsData = jsonData.results;
+        chooseCount = jsonData.quantity
+        localStorage.setItem('quantityAndscore',JSON.stringify({'quantity':jsonData.quantity,score:jsonData.score}));
+        // delete otherData.results;
+        document.getElementById('total-projects').textContent = chooseCount;
+        displayProjects(allProjectsData);
+
+        if (allProjectsData.length > 0) {
+            displayFullProjectDetails(allProjectsData);
+        }
+
+        loadChosenProjectsFromLocalStorage();
+    } catch (error) {
+        console.error('Failed to fetch data:', error);
+    }
+}
+        function displayFullProjectDetails(projectData) {
+            const projectDetailsContainer = document.getElementById('project-details-container');
+            projectDetailsContainer.innerHTML = '';
+
+            projectData.forEach((project, index) => {
+                const projectDetailSection = document.createElement('div');
+                projectDetailSection.classList.add('section');
+                
+                for (let key in project) {
+                    if (project.hasOwnProperty(key)) {
+                        const detailItem = document.createElement('div');
+                        const sectionId = `${key}-${index}`;
+                        detailItem.id = sectionId;
+                        detailItem.innerHTML = `<h4>${key.replace('_', ' ')}</h4><p>${project[key]}</p>`;
+                        projectDetailSection.appendChild(detailItem);
+                    }
+                }
+
+                projectDetailsContainer.appendChild(projectDetailSection);
+            });
+        }
+        function displayProjects(projectData) {
+            const shortTitleList = document.getElementById('short-title-list');
+            shortTitleList.innerHTML = '';
+
+            projectData.forEach((project, index) => {
+                const shortTitleItem = document.createElement('div');
+                shortTitleItem.classList.add('short-title-item');
+                shortTitleItem.textContent = project.short_title;
+
+                shortTitleItem.addEventListener('click', () => {
+                    showTitleList(index, projectData);
+                    scrollToIndustryPartner(index); 
+                });
+
+                shortTitleList.appendChild(shortTitleItem);
+
+                const buttonContainer = document.createElement('div');
+                buttonContainer.innerHTML = `
+                    <button id="choose-btn-${index}">Choose</button>
+                    <button id="close-btn-${index}">Close</button>
+                `;
+                shortTitleItem.appendChild(buttonContainer);
+
+                const chooseButton = document.getElementById(`choose-btn-${index}`);
+                const closeButton = document.getElementById(`close-btn-${index}`);
+
+                chooseButton.onclick = () => chooseProject(project);
+                closeButton.onclick = () => removeProject(project.sequence_num);
+
+                const titleList = document.createElement('div');
+                titleList.innerHTML = `
+                    <div class="title-list-item" data-target="about_organisation-${index}">About Organisation</div>
+                    <div class="title-list-item" data-target="project_deliverables-${index}">Project Deliverables</div>
+                    <div class="title-list-item" data-target="project_description-${index}">Project Description</div>
+                    <div class="title-list-item" data-target="required_skills-${index}">Required Skills</div>
+                    <div class="title-list-item" data-target="required_IP-${index}">IP & Confidentiality</div>
+                `;
+                titleList.style.display = 'none';
+                titleList.id = `title-list-${index}`;
+
+                shortTitleList.appendChild(titleList);
+
+                titleList.querySelectorAll('.title-list-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const target = item.getAttribute('data-target');
+                        scrollToSection(target);
+                    });
+                });
+            });
+        }
+
+        function showTitleList(index, projectData) {
+            projectData.forEach((_, i) => {
+                const titleList = document.getElementById(`title-list-${i}`);
+                if (titleList) {
+                    titleList.style.display = i === index ? 'block' : 'none';
+                }
+            });
+        }
+
+        function scrollToIndustryPartner(index) {
+            const container = document.querySelector('.container');
+            const scrollAmount = index * 100;
+            container.scrollTop = scrollAmount;
+        }
+
+        function scrollToSection(target) {
+            const element = document.getElementById(target);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function searchProjects() {
+            const searchInput = document.getElementById('search-input').value.trim().toLowerCase();
+            console.log(searchInput)
+            console.log(allProjectsData)
+            const filteredProjects = allProjectsData.filter(project =>
+                project.short_title.toLowerCase().includes(searchInput)
+            );
+
+            if (filteredProjects.length === 0) {
+                document.getElementById('error-message').textContent = 'No projects found.';
+            } else {
+                document.getElementById('error-message').textContent = '';
+                displayProjects(filteredProjects);
+            }
+        }
+
+        function chooseProject(project) {
+            if (chosenItems.size >= chooseCount) {
+        alert(`You can only select up to ${chooseCount} projects!`); // Or display the message in another way
+        return; // Stop the selection if the limit is reached
+    }
+
+    // Continue adding the project to the selection
+    chosenItems.add(project);
+    chosenItemsId.add(project.sequence_num);
+    localStorage.setItem('chooseItem', JSON.stringify(Array.from(chosenItems)));
+    localStorage.setItem('chooseItemId', JSON.stringify(Array.from(chosenItemsId)));
+
+    // Update the progress bar and table
+    updateProgressBar();
+    updateChosenProjectsTable();
+        }
+
+        function removeProject(sequence_num) {
+            const projectToRemove = Array.from(chosenItems).find(project => project.sequence_num == sequence_num);
+    
+    if (projectToRemove) {
+        chosenItems.delete(projectToRemove);
+        chosenItemsId.delete(sequence_num); 
+        localStorage.setItem('chooseItem', JSON.stringify(Array.from(chosenItems)));
+        localStorage.setItem('chooseItemId', JSON.stringify(Array.from(chosenItemsId)));
+        updateProgressBar();
+        updateChosenProjectsTable();
+    }
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.querySelector('.progress-bar');
+            const totalProjects = chooseCount;/* allProjectsData.length */
+            const selectedProjects = chosenItems.size;
+            const percentage = (selectedProjects / totalProjects) * 100;
+
+            progressBar.style.width = `${percentage}%`;
+            progressBar.style.backgroundColor = selectedProjects >= chooseCount ? 'green' : '#007BFF'; // Change color based on threshold
+
+            document.querySelector('.progress-text').textContent = `Selected ${selectedProjects} projects out of ${totalProjects} total projects`;
+
+            const submitButton = document.getElementById('submit-button');
+            submitButton.style.display = selectedProjects == chooseCount ? 'block' : 'none';
+        }
+        function removeProject2(sequence_num) {
+    const projectToRemove = Array.from(chosenItems).find(project => project.sequence_num === sequence_num);
+    if (projectToRemove) {
+        chosenItems.delete(projectToRemove);
+        chosenItemsId.delete(sequence_num);
+        localStorage.setItem('chooseItem', JSON.stringify(Array.from(chosenItems)));
+        localStorage.setItem('chooseItemId', JSON.stringify(Array.from(chosenItemsId)));
+
+        // Update progress bar and table
+        updateProgressBar();
+        updateChosenProjectsTable();
+    }
+}
+
+        function updateChosenProjectsTable() {
+            const tableBody = document.getElementById('chosen-projects-body');
+            tableBody.innerHTML = ''; // Clear the table before repopulating
+
+            chosenItems.forEach(project => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${project.short_title}</td>
+                    <td><button class="remove-button" onclick="removeProject2('${project.sequence_num}')">Remove</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function loadChosenProjectsFromLocalStorage() {
+            const storedChosenItems = JSON.parse(localStorage.getItem('chooseItem')) || [];
+            const storedChosenItemsId = JSON.parse(localStorage.getItem('chooseItemId')) || [];
+
+            storedChosenItems.forEach(item => chosenItems.add(item));
+            storedChosenItemsId.forEach(id => chosenItemsId.add(id));
+
+            updateProgressBar();
+            updateChosenProjectsTable();
+        }
+        document.getElementById('submit-button').addEventListener('click', () => {
+            window.location.href = '3.html';
+        });
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>

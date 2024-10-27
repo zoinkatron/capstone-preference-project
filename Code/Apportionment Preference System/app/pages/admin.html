@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Data</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin: 0;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      color: #555;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+      white-space: nowrap;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+    .top-right-download {
+      background-color: #4CAF50;
+      padding: 10px 20px;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #updateDataForm {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  padding: 20px 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: none;
+  max-width: 400px;
+  width: 100%;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#updateDataForm input {
+  width: calc(100% - 16px);
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+#updateDataForm button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+#updateDataForm button:hover {
+  background-color: #0056b3;
+}
+
+#cancelButton {
+  background-color: #f44336;
+}
+
+#cancelButton:hover {
+  background-color: #d32f2f;
+}
+
+  </style>
+</head>
+<body>
+  <button id="updateDataButton">Update Quantity and Score</button>
+
+  <button class="top-right-download" id="downloadTotalButton">Download Total File</button>
+
+  <div id="updateDataForm">
+    <form id="dataForm">
+      <label for="quantity">New Quantity:</label>
+      <input type="number" id="quantity" name="newQuantity" required><br><br>
+
+      <label for="score">New Score:</label>
+      <input type="number" id="score" name="newScore" required><br><br>
+
+      <button type="submit">Submit</button>
+      <button type="button" id="cancelButton">Cancel</button>
+    </form>
+  </div>
+
+  <div class="table-header">
+    <h2>Group Information</h2>
+    <button id="downloadGroupInfoButton">Download Group Info</button>
+  </div>
+  <table id="groupInfoTable">
+    <thead>
+      <tr>
+        <th>Group ID</th>
+        <th>Student ID</th>
+        <th>Email</th>
+        <th>Group Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Group info will be loaded here -->
+    </tbody>
+  </table>
+
+  <div class="table-header">
+    <h2>Project Data</h2>
+    <button id="downloadProjectButton">Download Project Data</button>
+  </div>
+  <table id="projectTable">
+    <thead>
+      <tr id="projectTableHeader">
+        <!-- Dynamic column headers will be inserted here -->
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Project data will be loaded here -->
+    </tbody>
+  </table>
+
+  <div class="table-header">
+    <h2>Projects Selected by Groups</h2>
+    <button id="downloadProjectsSelectedButton">Download Projects Selected</button>
+  </div>
+  <table id="projectsSelectedTable">
+    <thead>
+      <tr id="projectsSelectedHeader">
+        <th>Project</th>
+        <!-- Dynamic group and score columns will be inserted here -->
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Projects selected data will be loaded here -->
+    </tbody>
+  </table>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+  <script>
+    let quantity = ''
+    let score = ''
+
+const quantityInput = document.getElementById('quantity');
+const scoreInput = document.getElementById('score');
+    function loadProjectData() {
+      fetch('http://localhost:3001/api/Allproject')
+  .then(response => response.json())
+  .then(data => {
+    const groupInfoTableBody = document.querySelector('#groupInfoTable tbody');
+    const projectTableHeader = document.querySelector('#projectTableHeader');
+    const projectTableBody = document.querySelector('#projectTable tbody');
+    const projectsSelectedHeader = document.querySelector('#projectsSelectedHeader');
+    const projectsSelectedTableBody = document.querySelector('#projectsSelectedTable tbody');
+
+    groupInfoTableBody.innerHTML = '';
+    projectTableBody.innerHTML = '';
+    projectsSelectedTableBody.innerHTML = '';
+
+    console.log(data);
+
+    quantity = data.data2.quantity;
+    score = data.data2.score;
+
+    if (data.data.length > 0) {
+      let maxColumns = 0;
+      data.data.forEach(row => {
+        const projectScores = row.slice(4);
+        maxColumns = Math.max(maxColumns, projectScores.length / 2);
+      });
+      let headerRow = `<th>Group ID</th>`;
+      for (let i = 0; i < maxColumns; i++) {
+        headerRow += `<th>Score ${i + 1}</th><th>Project ${i + 1}</th>`;
+      }
+
+      projectTableHeader.innerHTML = headerRow;
+
+      const projectSelectionMap = {};
+
+      data.data.forEach(row => {
+        const groupId = row[0];
+        const studentId = row[1];
+        const email = row[2];
+        const groupDescription = row[3];
+
+        const groupInfoRow = document.createElement('tr');
+        groupInfoRow.innerHTML = `
+          <td>${groupId}</td>
+          <td>${studentId}</td>
+          <td>${email}</td>
+          <td>${groupDescription}</td>
+        `;
+        groupInfoTableBody.appendChild(groupInfoRow);
+
+        const projectRow = document.createElement('tr');
+        projectRow.innerHTML = `<td>${groupId}</td>`;
+
+        const projectScores = row.slice(4);
+
+        for (let i = 1; i < projectScores.length; i += 2) {
+          const score = projectScores[i];
+          projectRow.innerHTML += `<td>${score}</td>`;
+        }
+
+        for (let i = 0; i < projectScores.length; i += 2) {
+          const project = projectScores[i];
+          projectRow.innerHTML += `<td>${project}</td>`;
+
+          if (!projectSelectionMap[project]) {
+            projectSelectionMap[project] = [];
+          }
+          projectSelectionMap[project].push({ groupId, score: projectScores[i + 1] });
+        }
+
+        projectTableBody.appendChild(projectRow);
+      });
+
+      let dynamicHeaders = `<th>Project</th>`;
+      const maxGroups = Math.max(...Object.values(projectSelectionMap).map(groups => groups.length));
+
+      for (let i = 0; i < maxGroups; i++) {
+        dynamicHeaders += `<th>Group ID:Score ${i + 1}</th>`;
+      }
+      projectsSelectedHeader.innerHTML = dynamicHeaders;
+
+      Object.keys(projectSelectionMap).forEach(project => {
+        const projectSelectedRow = document.createElement('tr');
+        let rowContent = `<td>${project}</td>`;
+
+        projectSelectionMap[project].forEach(selection => {
+          rowContent += `<td>${selection.groupId}:${selection.score}</td>`;
+        });
+
+        const remainingCells = maxGroups - projectSelectionMap[project].length;
+        for (let i = 0; i < remainingCells; i++) {
+          rowContent += `<td></td>`;
+        }
+
+        projectSelectedRow.innerHTML = rowContent;
+        projectsSelectedTableBody.appendChild(projectSelectedRow);
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error fetching project data:', error);
+  });
+
+    }
+
+    function downloadTableAsExcel(tableId, sheetName, fileName) {
+      const table = document.getElementById(tableId);
+      const wb = XLSX.utils.table_to_book(table, { sheet: sheetName });
+      XLSX.writeFile(wb, fileName);
+    }
+
+    document.getElementById('downloadGroupInfoButton').addEventListener('click', function () {
+      downloadTableAsExcel('groupInfoTable', 'Group Information', 'Group_Info.xlsx');
+    });
+
+    document.getElementById('downloadProjectButton').addEventListener('click', function () {
+      downloadTableAsExcel('projectTable', 'Project Data', 'Project_Data.xlsx');
+    });
+
+    document.getElementById('downloadProjectsSelectedButton').addEventListener('click', function () {
+      downloadTableAsExcel('projectsSelectedTable', 'Projects Selected', 'Projects_Selected.xlsx');
+    });
+
+    document.getElementById('downloadTotalButton').addEventListener('click', function () {
+      fetch('http://localhost:3001/api/total', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      })
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'Total_Score.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(error => {
+        console.error('Error downloading total score file:', error);
+      });
+    });
+
+    loadProjectData();
+    const updateDataButton = document.getElementById('updateDataButton');
+    const updateDataForm = document.getElementById('updateDataForm');
+    const dataForm = document.getElementById('dataForm');
+    const cancelButton = document.getElementById('cancelButton');
+
+    updateDataButton.addEventListener('click', function () {
+    updateDataForm.style.display = 'block';
+    quantityInput.value = quantity;
+    scoreInput.value = score;
+    updateDataForm.style.display = 'block';
+    });
+
+    cancelButton.addEventListener('click', function () {
+      updateDataForm.style.display = 'none';
+    });
+
+    dataForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const formData = new FormData(dataForm);
+      const newQuantity = formData.get('newQuantity');
+      const newScore = formData.get('newScore');
+
+      fetch('http://localhost:3001/api/data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          newQuantity: newQuantity,
+          newScore: newScore
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert('Data successfully updated!');
+        updateDataForm.style.display = 'none';
+      })
+      .catch(error => {
+        console.error('Error updating data:', error);
+        alert('Failed to update data.');
+      });
+    });
+  </script>
+</body>
+</html>
