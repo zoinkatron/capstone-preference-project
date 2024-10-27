@@ -1,0 +1,82 @@
+function doGet(request) {
+
+ //This will be the first page user sees it. 
+  var mainscreen = "index";  
+  
+  var SiteName = "Preference System Test"; 
+  
+  return HtmlService.createHtmlOutputFromFile(mainscreen)
+    .setTitle(SiteName)
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+ 
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename)
+      .getContent();
+}
+
+//--->new functions > start
+
+function SheetConn(SheetName) 
+{
+  /*
+  This will connect to the sheet. 
+  This needed in order to access the sheet and read and write data.
+  
+  @parameters: sheetname
+  @return: connection string
+  
+  */
+  
+  //working id  -> get this from sheet url 
+  //var strFileID =  SpreadsheetApp.getActiveSpreadsheet().getId();
+  var strFileID = '17u6BngAK1ScADDXkG-aQ66hFLWl_u2-kC5sSZ3Vwq2g';
+
+  ///Logger.log(strFileID);
+  
+  var ss = SpreadsheetApp.openById(strFileID);
+  //var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  
+  //var ss = SpreadsheetApp.openById(strFileID);
+  var sheet = ss.getSheetByName(SheetName);
+  
+ 
+  
+  return sheet;  
+}
+
+//This function gets the last row of the sheet, checking if it is populated
+function getLastPopulatedRow(SheetConn,SourceRange) 
+{
+  /*
+  This will get the last row that has data
+  
+  @parameters: sheet connection string and column ranage. i.e. A1:A
+  @return: the last row number found data on
+  */
+  
+  //var strSheetID = GetFileID();
+  //var s = SpreadsheetApp.openById(strSheetID).getSheetByName(SheetName);
+  
+  var s = SheetConn;
+  var data = s.getRange(SourceRange + s.getLastRow()).getValues();
+  var populated = false;
+  for (var i = data.length-1; i > 0; i--) 
+  {
+    for (var j = 0; j < data[0].length; j++) 
+    {
+      if (data[i][j]) 
+      {
+        populated = true;
+        break;
+      }
+    }
+    if (populated) break;
+  }
+  i++;
+  return i;
+  Logger.log('Last populated row in column A: ' + i);
+}
+//--->new functions > end

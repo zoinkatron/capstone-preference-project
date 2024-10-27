@@ -1,0 +1,236 @@
+/*
+    TO-DO:
+    1. need to add GetPref(id)
+         - rather than geting all prefs... get one with an id (team id will work)
+
+    2. 
+*/
+
+
+//  GetAllPrefData:
+//
+//    description: Gets all the prefs data from specified sheet name, not optimal for data retrieval (with large sets of data), but does its job.
+//
+//    parameters: No parameters. (CHANGE TO ACCEPT DIFFERENT SHEET NAMES)
+//
+//    returns: returns row data from specfied sheet name as JSON objects.
+//
+function GetAllPrefData()
+{
+  //---> get sheet1 data
+  try 
+  {
+    // sheet name you want to connect/get data from
+    var Sheet = SheetConn("Responses");
+    // its getting the correct data! not displaying in the html tho?
+    console.log(Sheet.getRange("a2:L"+getLastPopulatedRow(Sheet,"a1:a")).getValues());
+     
+    var sheet_data = Sheet.getRange("a2:L"+getLastPopulatedRow(Sheet,"a1:a")).getValues();
+    var a1 = [];
+    
+    // loop through sheet rows (r)
+    // first row will contain column headers
+    for (var r = 0; r < sheet_data.length; r++) {
+
+      // put it into json object array
+      // the pref data is an array of the pref data, 1-7 corresponds to sheet rows/columns
+      a1.push({
+        timestamp:sheet_data[r][0],
+        email:sheet_data[r][1],
+        acknowledgement:sheet_data[r][2],
+        student_id:sheet_data[r][3],
+        team_id:sheet_data[r][4],
+        pref_data1:sheet_data[r][5],
+        pref_data2:sheet_data[r][6],
+        pref_data3:sheet_data[r][7],
+        pref_data4:sheet_data[r][8],
+        pref_data5:sheet_data[r][9],
+        pref_data6:sheet_data[r][10],
+        pref_data7:sheet_data[r][11]
+      });   
+     Logger.log('Row ' + r + ' has data');
+    }
+
+    
+    if(a1.length > 1){
+      // found row data... next send the json object array back to ajax call
+      var data =        
+      {
+        status: "success",
+        prefs:a1,        
+      }; 
+    }else if(a1.length <1){
+      // didn't find any row data from the sheet
+      var data =        
+      {
+        status:  "error",
+        msg: "no data found", 
+      };  
+    }
+    console.log(data);
+    return  data;
+
+  }catch (error) 
+  {    
+  
+    /* If there's an error, show the error message */
+    //Return data array
+    data =        
+    {
+      status:"Failed",
+      msg: error.toString(),
+    };  
+    console.log("GET ALL PREF\n" + data);
+
+    return  data;  
+  } 
+}
+
+//  GetPrefData:
+//
+//    description: Gets all the prefs data from specified sheet name, not optimal for data retrieval (with large sets of data), but does its job.
+//
+//    parameters: 
+//     -  AjaxObject: json containing the the specified row/prefernce submission
+//
+//    returns: returns row data from specfied sheet name as JSON objects.
+//
+function GetPrefData(AjaxObject)
+{
+  //---> get sheet1 data
+  try 
+  {
+    // sheet name you want to connect/get data from
+    var Sheet = SheetConn("Responses");
+    // its getting the correct data! not displaying in the html tho?
+    console.log(Sheet.getRange("a2:L"+getLastPopulatedRow(Sheet,"a1:a")).getValues());
+     
+    var sheet_data = Sheet.getRange("a2:L"+getLastPopulatedRow(Sheet,"a1:a")).getValues();
+    var a1 = [];
+    
+    // loop through sheet rows (r)
+    // first row will contain column headers
+    for (var r = 0; r < sheet_data.length; r++) {
+
+      // put it into json object array
+      // the pref data is an array of the pref data, 1-7 corresponds to sheet rows/columns
+      a1.push({
+        timestamp:sheet_data[r][0],
+        email:sheet_data[r][1],
+        acknowledgement:sheet_data[r][2],
+        student_id:sheet_data[r][3],
+        team_id:sheet_data[r][4],
+        pref_data1:sheet_data[r][5],
+        pref_data2:sheet_data[r][6],
+        pref_data3:sheet_data[r][7],
+        pref_data4:sheet_data[r][8],
+        pref_data5:sheet_data[r][9],
+        pref_data6:sheet_data[r][10],
+        pref_data7:sheet_data[r][11]
+      });   
+     Logger.log('Row ' + r + ' has data');
+    }
+
+    
+    if(a1.length > 1){
+      // found row data... next send the json object array back to ajax call
+      var data =        
+      {
+        status: "success",
+        prefs:a1,        
+      }; 
+    }else if(a1.length <1){
+      // didn't find any row data from the sheet
+      var data =        
+      {
+        status:  "error",
+        msg: "no data found", 
+      };  
+    }
+    console.log(data);
+    return  data;
+
+  }catch (error) 
+  {    
+  
+    /* If there's an error, show the error message */
+    //Return data array
+    data =        
+    {
+      status:"Failed",
+      msg: error.toString(),
+    };  
+    console.log("GET ALL PREF\n" + data);
+
+    return  data;  
+  } 
+}
+
+
+//  AddPref:
+//
+//    description: Adds a new preference submission to the specified sheet name
+//
+//    parameters: No parameters. (CHANGE TO ACCEPT DIFFERENT SHEET NAMES)
+//
+//    returns: returns row data from specfied sheet as JSON objects.
+//
+function AddPref(AjaxObject)
+{
+  var response_sheet = PropertiesService.getScriptProperties().getProperty('Response Sheet');
+
+  //---> get sheet1 data
+  try 
+  {
+    //sheet name you want to connect/get data from
+    var Sheet = SheetConn(response_sheet);
+
+    var row_id = AjaxObject.row_id; 
+   
+   // values array
+   // pref data is array of pref values
+    var v1 = [
+      [
+        AjaxObject.Timestamp,
+        AjaxObject.Email,
+        AjaxObject.Acknowledgement,
+        AjaxObject.Student_ID,
+        AjaxObject.Team_ID,
+        AjaxObject.Pref_Data
+      ]
+    ];
+    //var Add =  Sheet.appendRow(v1);
+    //var row_id = getLastPopulatedRow(Sheet,"a1:a") +1 ;
+
+    //clear old content
+    //Sheet.getRange("B"+row_id).clearContent();
+
+    //update new content
+    Sheet.getRange("B"+row_id+":D"+row_id).setValues(v1);
+    //Sheet.getRange("B"+row_id).setValue(col_val);
+  
+
+    var data =        
+    {
+      status: "success",
+      msg:"updated content",
+      prefs:GetAllPrefData().prefs,  
+      row_id:row_id,      
+    }; 
+    console.log("ADD PREF\n" + data);
+    return  data;
+
+  }catch (error) 
+  {    
+  
+    /* If there's an error, show the error message */
+          //Return data array
+    data =        
+    {
+      status:"Failed",
+      msg: error.toString(),
+    };  
+     return  data;  
+  } 
+}
+//--->add preference submission > end

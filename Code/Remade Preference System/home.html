@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+ 
+   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <title>Information Submission</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .form-container {
+      justify-content: center;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    h1 {
+      color: #333;
+      justify-content: center;
+    }
+    p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        p1 {
+            display: flex;
+            color: #666;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+     .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+                .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+    .form-group input[type="checkbox"],
+.form-group label {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px; 
+}
+
+    .form-label {
+      font-weight: bold;
+    }
+
+    .submit-btn {
+              text-align: center;
+            background-color: #4CAF50;
+            color:white ;
+            padding: 0px;
+            border: none;
+            border-radius: 0px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+    }
+
+    .submit-btn:hover {
+      background-color: #45a049;
+    }
+    
+        /* Modal  */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0, 0, 0, 0.5); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #444;
+            font-size: 24px;
+        }
+
+        .modal-content p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .close-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Custom alert modal */
+        .alert-modal {
+            display: none;
+            position: fixed;
+            z-index: 2;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alert-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+    .error-message {
+      color: red;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+
+<body>
+ <!-- pop-up window -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <h2>Read Introductions</h2>
+            <p>Please read the following instructions carefully and click on the “Continue” button to start the task.</p>
+            <p1>Tip: Ensure that you fill in the relevant information carefully as you proceed through each step to ensure that the final submission is accurate.</p1>
+            <button id="closeModal" class="close-btn">Continue</button>
+        </div>
+    </div>
+
+  <div class="form-container">
+    <h2 class="text-center">Submit information</h2>
+
+    <!-- Display error message -->
+    <div id="error-message" class="error-message" style="display: none;"></div>
+
+    <form id="infoform" onsubmit="event.preventDefault(); submitForm('someURL');">
+      <div class="form-group">
+        <label for="email">E-Mail Address</label>
+        <input type="email" class="form-control" id="email" name="email" required placeholder="Enter a valid email address">
+      </div>
+    </form>
+
+
+    <div class="form-group">
+      <label class="form-label" for="student1">Student ID</label>
+      <input type="text" class="form-control" id="student1" name="student1 " required>
+    </div>
+        <div class="form-group">
+      <label class="form-label" for="student2">Student ID</label>
+      <input type="text" class="form-control" id="student2" name="student2 " required>
+    </div>
+        <div class="form-group">
+      <label class="form-label" for="student3">Student ID</label>
+      <input type="text" class="form-control" id="student3" name="student3 " required>
+    </div>
+        <div class="form-group">
+      <label class="form-label" for="student4">Student ID</label>
+      <input type="text" class="form-control" id="student4" name="student4 " required>
+    </div>
+       
+
+    <div class="form-group">
+      <label class="form-label" for="teamNumber">Team Number</label>
+      <input type="number" class="form-control" id="teamNumber" name="teamNumber" required>
+    </div>
+
+
+
+    <!-- Add confirmation checkbox -->
+    <div class="form-group">
+      <input type="checkbox" id="confirmCheckbox" name="confirmCheckbox">
+      <label for="confirmCheckbox">All information is correct</label>
+    </div>
+    <div class="submit-btn">
+      <ul>
+        <? var count = urls.length;?>
+        <? for(var i=0;i< count;i++){?>
+        <li><a href='<?= urls[i]?>'>
+            <button type="button" class="submit-btn"id="submitButton" onclick="submitForm('<?=urls[i]?>')"disabled>Submit</button>
+          </a>
+        </li>
+        <?}?>
+      </ul>
+    </div>
+    </form>
+  </div>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+ 
+    var modal = document.getElementById('myModal');
+    var closeModalBtn = document.getElementById('closeModal');
+
+
+    closeModalBtn.addEventListener('click', function() {
+
+        modal.style.display = "none";
+    });
+});
+    // When the checkbox is selected, enable the submit button
+      document.getElementById('confirmCheckbox').addEventListener('change', function() {
+        var submitButton = document.getElementById('submitButton');
+        submitButton.disabled = !this.checked;
+      });
+      function isEmpty(value) {
+        return value.trim() === ''; 
+        }
+        function submitForm(url) {
+
+        var email = document.getElementById('email').value;
+        var student1 = document.getElementById('student1').value;
+        var student2 = document.getElementById('student2').value;
+        var student3 = document.getElementById('student3').value;
+        var student4 = document.getElementById('student4').value;
+
+        var teamNumber = document.getElementById('teamNumber').value;
+        var errorMessage = document.getElementById('error-message');    
+        if (isEmpty(email) || isEmpty(student1)|| isEmpty(student2)|| isEmpty(student3)|| isEmpty(student4) || isEmpty(teamNumber) ) {
+          event.preventDefault(); 
+          alert('Please fill in all fields.'); 
+          } 
+          else
+          {                   
+        var formData = {
+          email: email,
+          student1: student1,
+          student2: student2,
+          student3: student3,
+          student4: student4,
+          teamNumber: teamNumber,
+        };
+        google.script.run.withSuccessHandler(function(response) {
+          window.location.href = url;
+        }).withFailureHandler(function(error) {
+          alert('Failed to submit:' + error.message);
+        }).submitForm(formData);
+        }
+      }      
+  </script>
+</body>
+
+</html>

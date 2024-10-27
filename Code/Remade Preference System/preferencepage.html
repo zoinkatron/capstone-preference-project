@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <title>Preference Form</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <style>
+    .horizontal-items {
+      display: flex;
+      gap: 10px;
+    }
+
+    .preference-slider {
+      justify-content: center;
+      vertical-align: middle;
+    }
+
+    .preference-value {
+      justify-content: right;
+      vertical-align: middle;
+      padding: 5%;
+    }
+
+    table {
+      width: 100%;
+      justify-content: left;
+      margin: 5px 10px 5px 10px;
+    }
+
+    .pref-button {
+      margin: 5px 10px 5px 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 class="text-center">Preference Form</h1>
+
+  <!-- Instructions Section -->
+  <div class="panel panel-primary center-block" style="width:60%;">
+    <div class="panel-heading text-center">Instructions</div>
+    <h4>It is your responsibility to read, understand, and follow the instructions below:</h4>
+    <p>By default, Teams have no special preferences for specific Projects. If your Team does not submit special
+      preferences, we assume your Team has no special preferences.</p>
+    <p>Special preferences range from mild (1) to strong (7). Think of them like university grades. The higher the
+      number, the stronger the preference.</p>
+    <p>Teams can submit the same levels of preference for multiple Projects. We are not asking for you to rank Projects.
+      Teams can give two or more Projects the same preference values.</p>
+    <p>Teams may submit special preferences for up to 7 projects.If more than 8 project preferences are submitted, they will not be considered.</p>
+    <p>We consider only the most recent submission made by each Team. Teams can make multiple submissions: we consider
+      only the latest.</p>
+    <p>We consider only submissions from students in registered Teams. We consider only submissions from students in the
+      Team named below.</p>
+  </div>
+  <div class="panel panel-primary center-block" style="width:60%;">
+    <div class="form-group">
+      <label class="text-center" for="teamNumber">Team Number</label>
+      <input type="number" id="teamNumber" name="teamNumber" class="form-control" required 
+          placeholder="Enter your team number 000 eg.063"
+          pattern="\d{3}" title="Three-digit number required (001 to 200)" max="200">
+</div>
+    </div>
+  </div>
+
+  <!-- Positive Preferences -->
+  <div class="panel panel-primary center-block" style="width:60%;">
+    <div class="panel-heading text-center">Add Positive Project Preferences</div>
+    <table id="positiveTable">
+      <tr>
+        <th>Project ID</th>
+        <th>Preference Value</th>
+      </tr>
+    </table>
+    <button class="btn btn-success pref-button" id="addPositiveRow">Add Positive New Row</button>
+  </div>
+
+
+
+  <div class="panel-footing text-center">
+    <button class="btn btn-success pref-button" id="submit">Submit</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="submitModal" tabindex="-1" role="dialog" aria-labelledby="submitModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="submitModalLabel">Submission Status</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+          Submit successfully!
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function(){
+        var maxRows = 7; // Limit each section to a maximum of 7 lines
+        var positiveCount = 0;
+
+        // Add a new row with positive preference
+        $("#addPositiveRow").click(function(){
+          if (positiveCount < maxRows) {
+            positiveCount++;
+            $("#positiveTable").append('<tr id="posRow'+positiveCount+'"><td><input type="text" name="positiveProject'+positiveCount+'" id="positiveProject'+positiveCount+'"/></td><td class="horizontal-items"><input type="range" class="preference-slider" name="positivePreference'+positiveCount+'" id="positivePreference'+positiveCount+'" value="0" min="0" max="7" oninput="this.nextElementSibling.value = this.value"><output class="preference-value">0</output></td><td><button type="button" name="removePos" id="'+positiveCount+'" class="btn btn-danger btn_remove_pos">X</button></td></tr>');
+          }
+          if (positiveCount >= maxRows) {
+            $("#addPositiveRow").prop('disabled', true);
+          }
+        });
+
+        $(document).on('click', '.btn_remove_pos', function(){
+          var button_id = $(this).attr("id");
+          $('#posRow'+button_id).remove();
+          positiveCount--;
+          if (positiveCount < maxRows) {
+            $("#addPositiveRow").prop('disabled', false);
+          }
+        });
+
+        $("#submit").click(function(){
+          $('#submitModal').modal('show');
+    var teamNumber = $("#teamNumber").val(); // 假设teamID输入字段的ID是teamID
+
+          var positivePreferences = [];
+          $("#positiveTable tr").each(function(){
+            var projectID = $(this).find("input[name^='positiveProject']").val();
+            var preferenceValue = $(this).find("input[name^='positivePreference']").val();
+            if (projectID) {
+              positivePreferences.push({
+                teamNumber: teamNumber, 
+                projectID: projectID,
+                preference: preferenceValue
+              });
+            }
+          });
+
+          google.script.run
+            .withSuccessHandler(function(response) {
+              alert('Data submitted successfully!');
+            })
+            .withFailureHandler(function(error) {
+              alert('Failed to submit data: ' + error.message);
+            })
+            .submitPreferences({
+              teamNumber: teamNumber,
+              positive: positivePreferences,
+            });
+        });
+      });
+  </script>
+</body>
+
+</html>

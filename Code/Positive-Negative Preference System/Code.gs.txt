@@ -1,0 +1,79 @@
+
+function doGet(e) {
+  if (e.parameter.page) {
+    var page = e.parameter.page.trim().toLowerCase();
+    if (page !== "home") {
+      var template = HtmlService.createTemplateFromFile(page);
+      template.url = getUrl();
+      var htmlOutput = template.evaluate()
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // 在 HtmlOutput 上使用 setXFrameOptionsMode
+      return htmlOutput;
+    } else {
+      return homepage();
+    }
+  } else {
+    return homepage();
+  }
+}
+
+function homepage() {
+  var pages = ["preferencepage"];
+  var urls = pages.map(function (name) {
+    return getUrl(name);
+  });
+  var template = HtmlService.createTemplateFromFile("home");
+  template.urls = urls;
+  return template.evaluate();
+}
+
+function getUrl(name) {
+  if (name) {
+    var url = ScriptApp.getService().getUrl();
+    return url + "?page=" + name;
+  } else {
+    return ScriptApp.getService().getUrl();
+  }
+
+}
+
+function submitForm(formData) {
+  try {
+    var spreadsheetId = '1hzM0k7QkfYgbD64ZGnbhHwHDFmn-EXOLNPC9fpJoRCA';
+    var sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName('preferencedata');  // 确保工作表名称为 "Choice"
+    var lastRow = sheet.getLastRow() + 1;
+    var timestamp = new Date();
+    var formattedTimestamp = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), "HH:mm:ss dd/MM/yyyy");
+
+    sheet.getRange(lastRow, 1).setValue(formattedTimestamp);
+    sheet.getRange(lastRow, 7).setValue(formData.email);            //  E-Mail Address
+    sheet.getRange(lastRow, 3).setValue(formData.student1);        //  Student ID
+    sheet.getRange(lastRow, 4).setValue(formData.student2);        // Student ID
+    sheet.getRange(lastRow, 5).setValue(formData.student3);        //  Student ID
+    sheet.getRange(lastRow, 6).setValue(formData.student4);        //  Student ID
+    sheet.getRange(lastRow, 2).setValue(formData.teamNumber);       //  Team Number
+
+
+    return 'Data has been successfully submitted';
+  }
+catch (error) {
+    throw new Error('Error in processing data:' + error.message);
+  }
+}
+function submitPreferences(data) {
+  try {
+    var spreadsheetId = '1hzM0k7QkfYgbD64ZGnbhHwHDFmn-EXOLNPC9fpJoRCA';
+    var sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName('positivepreferences');
+    var lastRow = sheet.getLastRow() + 1;
+
+    var rowData = ['T' + data.teamNumber];  
+    data.positive.forEach(function(preference, index) {
+      rowData.push('P' + preference.projectID); 
+      rowData.push(preference.preference); 
+    });
+    sheet.getRange(lastRow, 1, 1, rowData.length).setValues([rowData]);
+
+    return 'Success'; 
+  } catch (error) {
+    throw new Error('Data submission failed: ' + error.message);  
+  }
+}
