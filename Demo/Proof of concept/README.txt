@@ -1,0 +1,1 @@
+This folder contains images of the proof of concept web app using Google Appscript by Taine. n0074040
